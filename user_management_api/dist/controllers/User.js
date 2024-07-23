@@ -17,8 +17,8 @@ function createUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { nome, email, senha } = req.body;
         try {
-            if (nome == "" || email == "" || senha == "") {
-                return res.status(200).json({
+            if (!nome || !email || !senha) {
+                return res.status(400).json({
                     data: {
                         message: "Invalid values in inputs"
                     }
@@ -40,49 +40,49 @@ function getUsers(req, res) {
             return res.status(result.code).json(result.data);
         }
         catch (error) {
-            console.error('Error creating user:', error);
+            console.error('Error fetching users:', error);
             return res.status(500).json({ message: 'Internal server error' });
         }
     });
 }
 function updateUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const payload = req.body;
-        payload.id = req.params.id;
+        const { id } = req.params;
+        const { nome, email } = req.body;
         try {
-            if (payload.id == "" || payload.nome == "" || payload.email == "") {
-                return res.status(200).json({
+            if (!id || !nome || !email) {
+                return res.status(400).json({
                     data: {
                         message: "Invalid values in inputs"
                     }
                 });
             }
-            const result = yield User_service_1.default.updateUser({ id: payload.id, nome: payload.nome, email: payload.email });
-            return res.status(result.code).json(result);
+            const result = yield User_service_1.default.updateUser({ id, nome, email });
+            return res.status(result.code).json(result.data);
         }
         catch (error) {
-            console.error('Error ao atualizar usuario: ', error);
-            return res.status(500).json({ message: "Ocorreu algum error desconhecido!" });
+            console.error('Error updating user:', error);
+            return res.status(500).json({ message: 'Internal server error' });
         }
     });
 }
 function deleteUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const payload = req.params.id;
+        const { id } = req.params;
         try {
-            if (payload == "") {
-                return res.status(200).json({
+            if (!id) {
+                return res.status(400).json({
                     data: {
                         message: "Invalid values in inputs"
                     }
                 });
             }
-            const result = yield User_service_1.default.deleteUser({ id: payload });
-            return res.status(result.code).json(result);
+            const result = yield User_service_1.default.deleteUser({ id });
+            return res.status(result.code).json(result.data);
         }
         catch (error) {
-            console.error('Error ao atualizar usuario: ', error);
-            return res.status(500).json({ message: "Ocorreu algum error desconhecido!" });
+            console.error('Error deleting user:', error);
+            return res.status(500).json({ message: 'Internal server error' });
         }
     });
 }
@@ -90,19 +90,19 @@ function loginUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { email, senha } = req.body;
         try {
-            if (email == "" || senha == "") {
-                return res.status(200).json({
+            if (!email || !senha) {
+                return res.status(400).json({
                     data: {
                         message: "Invalid values in inputs"
                     }
                 });
             }
             const result = yield User_service_1.default.loginUser({ email, senha });
-            return res.status(result.code).json(result);
+            return res.status(result.code).json(result.data);
         }
         catch (error) {
-            console.error('Error ao atualizar usuario: ', error);
-            return res.status(500).json({ message: "Ocorreu algum error desconhecido!" });
+            console.error('Error logging in user:', error);
+            return res.status(500).json({ message: 'Internal server error' });
         }
     });
 }

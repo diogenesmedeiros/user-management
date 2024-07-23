@@ -17,7 +17,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const User_route_1 = __importDefault(require("./router/User.route"));
 const cors_1 = __importDefault(require("cors"));
 const sync_1 = require("./database/sync");
-const Database_1 = __importDefault(require("./database/Database"));
 const User_service_1 = __importDefault(require("./services/User.service"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -34,8 +33,6 @@ app.use('/users', User_route_1.default);
 const port = process.env.PORT || 3001;
 app.listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`running: http://localhost:${port}`);
-    Database_1.default.on('connection', () => {
-        (0, sync_1.sync)();
-    });
+    (0, sync_1.sync)();
     yield User_service_1.default.createUser({ nome: 'admin', email: 'admin@admin.com', senha: '123456' });
 }));
