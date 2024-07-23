@@ -7,7 +7,7 @@ Você precisará das seguintes ferramentas para executar a aplicação:
 
 - [Node.js](https://nodejs.org)
 - [Docker](https://www.docker.com)
-- [MySql](https://dev.mysql.com/downloads/mysql) ou [Postgres](https://www.postgresql.org/download)
+- [MySql](https://dev.mysql.com/downloads/mysql)
 
 ## Instalação
 
