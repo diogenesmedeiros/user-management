@@ -24,14 +24,18 @@ const UpdateUser: React.FC = () => {
 
     const handleGetUser = async (id: any) => {
         try {
-            const response = await api.get('/users');
-            const fetchedUsers: User[] = response.data.users;
-            const foundUser = fetchedUsers.find((userData: any) => userData.id === id);
-    
-            if (foundUser) {
-                setUser(foundUser);
-            } else {
-                setAlertMessage(`Usuário com ID ${id} não encontrado.`);
+            if(!inputs.nome || inputs.email) {
+                setAlertMessage("Preencha o formulario")
+            }else{
+                const response = await api.get('/users');
+                const fetchedUsers: User[] = response.data.users;
+                const foundUser = fetchedUsers.find((userData: any) => userData.id === id);
+        
+                if (foundUser) {
+                    setUser(foundUser);
+                } else {
+                    setAlertMessage(`Usuário com ID ${id} não encontrado.`);
+                }
             }
         } catch (error) {
             setAlertMessage('Ocorreu um erro ao buscar o usuário. Por favor, tente novamente.');

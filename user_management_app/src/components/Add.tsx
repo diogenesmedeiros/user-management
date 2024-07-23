@@ -17,7 +17,7 @@ const AddUser: React.FC = () => {
         e.preventDefault()
 
         if(inputs.name === "" || inputs.email === "" || inputs.password  === "") {
-            setAlertMessage("Preenchar o email e senha.")
+            setAlertMessage("Preenchar o formulario.")
         }else {
             try {
                 await api.post('/users', qs.stringify({

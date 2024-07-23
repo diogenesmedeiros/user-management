@@ -18,68 +18,58 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-let response;
 function createUser(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const hashedPassword = yield bcrypt_1.default.hash(payload.senha, 10);
-            yield User_model_1.User.create({
-                id: (0, uuid_1.v4)(),
-                nome: payload.nome,
-                email: payload.email,
-                senha: hashedPassword
-            });
-            return response = {
+            yield User_model_1.User.create((0, uuid_1.v4)(), payload.nome, payload.email, hashedPassword);
+            return {
                 code: 200,
                 data: {
-                    message: 'Sucesso ao adicionar o usuario!'
-                }
+                    message: 'Sucesso ao adicionar o usuario!',
+                },
             };
         }
         catch (error) {
-            console.log(error);
-            response = {
+            console.error(error);
+            return {
                 code: 500,
                 data: {
-                    message: 'Ocorreu algum error desconhecido!'
-                }
+                    message: 'Ocorreu algum erro desconhecido!',
+                },
             };
-            return response;
         }
     });
 }
 function getUsers() {
     return __awaiter(this, void 0, void 0, function* () {
-        let allUser = {};
         try {
-            const getUsers = yield User_model_1.User.findAll({
-                attributes: { exclude: ['senha'] }
-            });
-            if (getUsers.length > 0) {
-                return response = {
+            const allUsers = yield User_model_1.User.findAll();
+            if (allUsers.length > 0) {
+                return {
                     code: 200,
                     data: {
-                        users: getUsers,
-                        message: 'Sucesso'
-                    }
+                        users: allUsers,
+                        message: 'Sucesso',
+                    },
                 };
             }
             else {
-                return response = {
+                return {
                     code: 404,
                     data: {
-                        message: 'Nenhum usuario na base de dados!!'
-                    }
+                        message: 'Nenhum usuário na base de dados!',
+                    },
                 };
             }
         }
         catch (error) {
-            console.log(error);
-            return response = {
+            console.error(error);
+            return {
                 code: 500,
                 data: {
-                    message: 'Ocorreu algum error desconhecido!'
-                }
+                    message: 'Ocorreu algum erro desconhecido!',
+                },
             };
         }
     });
@@ -88,22 +78,21 @@ function updateUser(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { id, nome, email } = payload;
-            console.log(id);
-            yield User_model_1.User.update({ id, nome, email }, { where: { id } });
-            return response = {
+            yield User_model_1.User.update(id, nome, email);
+            return {
                 code: 200,
                 data: {
-                    message: 'Usuario atualizado com sucesso!!!'
-                }
+                    message: 'Usuário atualizado com sucesso!',
+                },
             };
         }
         catch (error) {
-            console.log(error);
-            return response = {
+            console.error(error);
+            return {
                 code: 500,
                 data: {
-                    message: 'Ocorreu algum error desconhecido!'
-                }
+                    message: 'Ocorreu algum erro desconhecido!',
+                },
             };
         }
     });
@@ -111,21 +100,21 @@ function updateUser(payload) {
 function deleteUser(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield User_model_1.User.destroy({ where: { id: payload.id } });
-            return response = {
+            yield User_model_1.User.destroy(payload.id);
+            return {
                 code: 200,
                 data: {
-                    message: 'Usuario removido com sucesso!!!'
-                }
+                    message: 'Usuário removido com sucesso!',
+                },
             };
         }
         catch (error) {
-            console.log(error);
-            return response = {
+            console.error(error);
+            return {
                 code: 500,
                 data: {
-                    message: 'Ocorreu algum error desconhecido!'
-                }
+                    message: 'Ocorreu algum erro desconhecido!',
+                },
             };
         }
     });
@@ -133,43 +122,40 @@ function deleteUser(payload) {
 function loginUser(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const user = yield User_model_1.User.findOne({ where: { email: payload.email } });
-            console.log(user);
+            const [user] = yield User_model_1.User.findOne(payload.email);
             if (!user) {
-                response = {
+                return {
                     code: 404,
                     data: {
-                        message: 'Usuario nao encontrado!'
-                    }
+                        message: 'Usuário não encontrado!',
+                    },
                 };
-                return response;
             }
             const isPasswordValid = yield bcrypt_1.default.compare(payload.senha, user.senha);
             if (!isPasswordValid) {
-                response = {
+                return {
                     code: 401,
                     data: {
-                        message: 'Credenciais invalidas'
-                    }
+                        message: 'Credenciais inválidas',
+                    },
                 };
-                return response;
             }
             const token = jsonwebtoken_1.default.sign({ id: user.id }, String(process.env.SECRET_JWT), { expiresIn: '1h' });
-            return response = {
+            return {
                 code: 200,
                 data: {
-                    message: 'Usuario autenticado',
-                    token: token
-                }
+                    message: 'Usuário autenticado',
+                    token: token,
+                },
             };
         }
         catch (error) {
-            console.log(error);
-            return response = {
+            console.error(error);
+            return {
                 code: 500,
                 data: {
-                    message: 'Ocorreu algum error desconhecido!'
-                }
+                    message: 'Ocorreu algum erro desconhecido!',
+                },
             };
         }
     });
@@ -179,5 +165,5 @@ exports.default = {
     getUsers,
     updateUser,
     deleteUser,
-    loginUser
+    loginUser,
 };

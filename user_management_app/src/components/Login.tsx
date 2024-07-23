@@ -19,7 +19,7 @@ const Login: React.FC = () => {
         e.preventDefault()
 
         if(!inputs.email || !inputs.password) {
-            setAlertMessage("Preenchar o email e senha.")
+            setAlertMessage("Preenchar o formulario.")
         }else {
             try {
                 const response = await api.post('/users/login', qs.stringify({

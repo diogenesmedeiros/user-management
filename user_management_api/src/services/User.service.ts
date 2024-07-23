@@ -1,176 +1,154 @@
-import {User} from '../database/models/User.model'
-import {v4 as uuid} from 'uuid'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import dotenv from 'dotenv'
+import { User } from '../database/models/User.model';
+import { v4 as uuid } from 'uuid';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-dotenv.config()
+dotenv.config();
 
 interface CreateUserPayload {
-    id?: string
-    nome?: string
-    email?: string
-    senha?: string
+    id?: string;
+    nome?: string;
+    email?: string;
+    senha?: string;
 }
-
-let response:any
 
 async function createUser(payload: CreateUserPayload) {
     try {
-        const hashedPassword = await bcrypt.hash(payload.senha!, 10)
+        const hashedPassword = await bcrypt.hash(payload.senha!, 10);
+        await User.create(uuid(), payload.nome!, payload.email!, hashedPassword);
 
-        await User.create({ 
-            id: uuid(),
-            nome: payload.nome!,
-            email: payload.email!,
-            senha:  hashedPassword 
-        })
-
-        return response = {
+        return {
             code: 200,
             data: {
-                message: 'Sucesso ao adicionar o usuario!'
-            }
-        }
-    }catch(error) {
-        console.log(error)
-        response = {
+                message: 'Sucesso ao adicionar o usuario!',
+            },
+        };
+    } catch (error) {
+        console.error(error);
+        return {
             code: 500,
             data: {
-                message: 'Ocorreu algum error desconhecido!'
-            }
-        }
-
-        return response
+                message: 'Ocorreu algum erro desconhecido!',
+            },
+        };
     }
 }
 
 async function getUsers() {
-    let allUser: { [key: string]: any } = {}
-
     try {
-        const getUsers = await User.findAll({
-            attributes: { exclude: ['senha'] }
-        })
+        const allUsers = await User.findAll();
 
-        if(getUsers.length > 0) {
-            return response = {
+        if (allUsers.length > 0) {
+            return {
                 code: 200,
                 data: {
-                    users: getUsers,
-                    message: 'Sucesso'
-                }
-            }
-        }else{
-            return response = {
+                    users: allUsers,
+                    message: 'Sucesso',
+                },
+            };
+        } else {
+            return {
                 code: 404,
                 data: {
-                    message: 'Nenhum usuario na base de dados!!'
-                }
-            }
+                    message: 'Nenhum usuário na base de dados!',
+                },
+            };
         }
-    }catch(error) {
-        console.log(error)
-        return response = {
+    } catch (error) {
+        console.error(error);
+        return {
             code: 500,
             data: {
-                message: 'Ocorreu algum error desconhecido!'
-            }
-        }
+                message: 'Ocorreu algum erro desconhecido!',
+            },
+        };
     }
 }
 
 async function updateUser(payload: CreateUserPayload) {
     try {
-        const { id, nome, email } = payload
+        const { id, nome, email } = payload;
 
-        console.log(id)
+        await User.update(id!, nome!, email!);
 
-        await User.update({ id, nome, email }, { where: { id } })
-
-        return response = {
+        return {
             code: 200,
             data: {
-                message: 'Usuario atualizado com sucesso!!!'
-            }
-        }
-    } catch(error) {
-        console.log(error)
-        return response = {
+                message: 'Usuário atualizado com sucesso!',
+            },
+        };
+    } catch (error) {
+        console.error(error);
+        return {
             code: 500,
             data: {
-                message: 'Ocorreu algum error desconhecido!'
-            }
-        }
+                message: 'Ocorreu algum erro desconhecido!',
+            },
+        };
     }
 }
 
 async function deleteUser(payload: CreateUserPayload) {
     try {
-        await User.destroy({ where: { id: payload.id }})
+        await User.destroy(payload.id!);
 
-        return response = {
+        return {
             code: 200,
             data: {
-                message: 'Usuario removido com sucesso!!!'
-            }
-        }
-    } catch(error) {
-        console.log(error)
-        return response = {
+                message: 'Usuário removido com sucesso!',
+            },
+        };
+    } catch (error) {
+        console.error(error);
+        return {
             code: 500,
             data: {
-                message: 'Ocorreu algum error desconhecido!'
-            }
-        }
+                message: 'Ocorreu algum erro desconhecido!',
+            },
+        };
     }
 }
 
 async function loginUser(payload: CreateUserPayload) {
     try {
-        const user = await User.findOne({ where: { email: payload.email } })
+        const [user] = await User.findOne(payload.email!);
 
-        console.log(user)
-
-        if(!user) {
-            response = {
+        if (!user) {
+            return {
                 code: 404,
                 data: {
-                    message: 'Usuario nao encontrado!'
-                }
-            }
-
-            return response
+                    message: 'Usuário não encontrado!',
+                },
+            };
         }
 
-        const isPasswordValid = await bcrypt.compare(payload.senha!, user.senha)
-        if(!isPasswordValid) {
-            response = {
+        const isPasswordValid = await bcrypt.compare(payload.senha!, user.senha);
+        if (!isPasswordValid) {
+            return {
                 code: 401,
                 data: {
-                    message: 'Credenciais invalidas'
-                }
-            }
-
-            return response
+                    message: 'Credenciais inválidas',
+                },
+            };
         }
 
-        const token = jwt.sign({ id: user.id }, String(process.env.SECRET_JWT), { expiresIn: '1h' })
-        return response = {
+        const token = jwt.sign({ id: user.id }, String(process.env.SECRET_JWT), { expiresIn: '1h' });
+        return {
             code: 200,
             data: {
-                message: 'Usuario autenticado',
-                token: token
-            }
-        }
-    } catch(error) {
-        console.log(error)
-        return response = {
+                message: 'Usuário autenticado',
+                token: token,
+            },
+        };
+    } catch (error) {
+        console.error(error);
+        return {
             code: 500,
             data: {
-                message: 'Ocorreu algum error desconhecido!'
-            }
-        }
+                message: 'Ocorreu algum erro desconhecido!',
+            },
+        };
     }
 }
 
@@ -179,5 +157,5 @@ export default {
     getUsers,
     updateUser,
     deleteUser,
-    loginUser
-}
+    loginUser,
+};

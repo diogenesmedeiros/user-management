@@ -2,6 +2,9 @@ import express, { Request, Response } from 'express'
 import dotenv from 'dotenv'
 import userRoutes from './router/User.route'
 import cors from 'cors'
+import { sync } from './database/sync'
+import pool from './database/Database'
+import UserService from './services/User.service'
 
 dotenv.config()
 
@@ -22,6 +25,10 @@ app.use('/users', userRoutes)
 
 const port = process.env.PORT || 3001
 
-app.listen(port, () => {
+app.listen(port, async () => {
     console.log(`running: http://localhost:${port}`);
+
+    sync()
+
+    await UserService.createUser({nome: 'admin', email: 'admin@admin.com', senha: '123456'});
 })

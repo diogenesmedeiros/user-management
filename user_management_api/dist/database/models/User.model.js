@@ -13,43 +13,102 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
-const sequelize_1 = require("sequelize");
 const Database_1 = __importDefault(require("../Database"));
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
-class User extends sequelize_1.Model {
+function userExists(nome, email) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const connection = yield Database_1.default.getConnection();
+        try {
+            const query = 'SELECT COUNT(*) AS count FROM users WHERE nome = ? OR email = ?';
+            const [rows] = yield connection.query(query, [nome || '', email || '']);
+            const result = rows;
+            return result[0].count > 0;
+        }
+        finally {
+            connection.release();
+        }
+    });
+}
+class User {
+    static createTable() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield Database_1.default.getConnection();
+            try {
+                yield connection.query(`
+                CREATE TABLE IF NOT EXISTS users (
+                    id CHAR(36) PRIMARY KEY,
+                    nome VARCHAR(128) NOT NULL,
+                    email VARCHAR(128) NOT NULL,
+                    senha VARCHAR(128) NOT NULL
+                )
+            `);
+            }
+            finally {
+                connection.release();
+            }
+        });
+    }
+    static create(id, nome, email, senha) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (yield userExists(nome, email)) {
+                throw new Error('Usuário com o mesmo nome ou e-mail já existe.');
+            }
+            const connection = yield Database_1.default.getConnection();
+            try {
+                const [result] = yield connection.query('INSERT INTO users (id, nome, email, senha) VALUES (?, ?, ?, ?)', [id, nome, email, senha]);
+                return result;
+            }
+            finally {
+                connection.release();
+            }
+        });
+    }
+    static findAll() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield Database_1.default.getConnection();
+            try {
+                const [rows] = yield connection.query('SELECT id, nome, email FROM users WHERE 1');
+                return rows;
+            }
+            finally {
+                connection.release();
+            }
+        });
+    }
+    static update(id, nome, email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield Database_1.default.getConnection();
+            try {
+                const [result] = yield connection.query('UPDATE users SET nome = ?, email =? WHERE id ?', [nome, email, id]);
+                return result;
+            }
+            finally {
+                connection.release();
+            }
+        });
+    }
+    static destroy(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield Database_1.default.getConnection();
+            try {
+                const [result] = yield connection.query('DELETE FROM users WHERE id = ?', [id]);
+                return result;
+            }
+            finally {
+                connection.release();
+            }
+        });
+    }
+    static findOne(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield Database_1.default.getConnection();
+            try {
+                const [rows] = yield connection.query('SELECT id, nome, email, senha FROM users WHERE email = ?', [email]);
+                return rows;
+            }
+            finally {
+                connection.release();
+            }
+        });
+    }
 }
 exports.User = User;
-User.init({
-    id: {
-        type: sequelize_1.DataTypes.UUID,
-        primaryKey: true
-    },
-    nome: {
-        type: new sequelize_1.DataTypes.STRING(128),
-        allowNull: false
-    },
-    email: {
-        type: new sequelize_1.DataTypes.STRING(128),
-        allowNull: false
-    },
-    senha: {
-        type: new sequelize_1.DataTypes.STRING(128),
-        allowNull: false
-    }
-}, {
-    tableName: "users",
-    sequelize: Database_1.default
-});
-const sync = () => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield Database_1.default.authenticate();
-        yield Database_1.default.sync({ force: process.env.MODE == "DEV" });
-        console.log("tabelas sicronizadas");
-    }
-    catch (error) {
-        console.log("nao foi possivel sicronizar o db: ", error);
-        process.exit();
-    }
-});
-sync();
