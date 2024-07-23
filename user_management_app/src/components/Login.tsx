@@ -28,10 +28,11 @@ const Login: React.FC = () => {
                 }),
                 { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }})
 
-                login(response.data.data.token)
+                login(response.data.token)
 
                 navigate('/dashboard')
             } catch(error) {
+              console.log(error)
                 setAlertMessage("Ocorreu algum problema, tente novamente!!!")
             }
         }
